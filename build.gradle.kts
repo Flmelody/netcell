@@ -12,7 +12,11 @@ repositories {
 }
 
 dependencies {
+    implementation("org.slf4j:slf4j-api:2.0.13")
     implementation("io.netty:netty-all:4.1.111.Final")
+    testImplementation("ch.qos.logback:logback-classic:1.5.6")
+    testImplementation("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5")
+    testImplementation("org.eclipse.paho:org.eclipse.paho.mqttv5.client:1.2.5")
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
 }
