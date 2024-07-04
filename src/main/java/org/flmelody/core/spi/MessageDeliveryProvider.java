@@ -17,8 +17,8 @@
 package org.flmelody.core.spi;
 
 /**
- * Reserve a certain number and duration of messages for future subscribers.
+ * The heart of message delivery.
  *
  * @author esotericman
  */
-public interface RetainedMessageProvider {}
+public interface MessageDeliveryProvider {}

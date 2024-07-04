@@ -16,7 +16,12 @@
 
 package org.flmelody.core.spi;
 
+import io.netty.handler.codec.mqtt.MqttQoS;
+
 /**
+ * The persistence of messages should be implemented in a way that ensures as high a quality as
+ * possible.
+ * @see MqttQoS
  * @author esotericman
  */
 public interface PersistentStoreProvider {}

@@ -17,6 +17,8 @@
 package org.flmelody.core.spi;
 
 /**
+ * Storage of client sessions.
+ *
  * @author esotericman
  */
 public interface PersistentSessionProvider {}
