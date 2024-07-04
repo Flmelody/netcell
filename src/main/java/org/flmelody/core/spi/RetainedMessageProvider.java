@@ -19,4 +19,4 @@ package org.flmelody.core.spi;
 /**
  * @author esotericman
  */
-public interface StoreProvider {}
+public interface RetainedMessageProvider {}

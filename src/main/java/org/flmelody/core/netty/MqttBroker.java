@@ -31,7 +31,7 @@ import io.netty.handler.codec.mqtt.MqttDecoder;
 import io.netty.handler.codec.mqtt.MqttEncoder;
 import org.flmelody.core.Broker;
 import org.flmelody.core.netty.handler.MqttMessageHandler;
-import org.flmelody.core.spi.StoreProvider;
+import org.flmelody.core.spi.PersistentStoreProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +47,7 @@ public class MqttBroker implements Broker {
   private final int port;
   private final boolean useEpoll;
   private final boolean useSSL;
-  private StoreProvider storeProvider;
+  private PersistentStoreProvider persistentStoreProvider;
 
   public MqttBroker() {
     this(0);
@@ -89,7 +89,7 @@ public class MqttBroker implements Broker {
   }
 
   private void loadStore() {
-    storeProvider = ServiceLoader.load(StoreProvider.class).findFirst().orElse(null);
+    persistentStoreProvider = ServiceLoader.load(PersistentStoreProvider.class).findFirst().orElse(null);
   }
 
   @Override
