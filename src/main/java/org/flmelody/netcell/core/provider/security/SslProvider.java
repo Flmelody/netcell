@@ -14,11 +14,26 @@
  * limitations under the License.
  */
 
-package org.flmelody.core.spi;
+package org.flmelody.netcell.core.provider.security;
+
+import java.io.InputStream;
+import org.flmelody.netcell.core.provider.Provider;
 
 /**
- * The heart of message delivery.
- *
  * @author esotericman
  */
-public interface MessageDeliveryProvider {}
+public interface SslProvider extends Provider {
+  /**
+   * input stream of certificate file.
+   *
+   * @return certificate file
+   */
+  InputStream certFile();
+
+  /**
+   * input stream of the key file.
+   *
+   * @return key file
+   */
+  InputStream keyFile();
+}

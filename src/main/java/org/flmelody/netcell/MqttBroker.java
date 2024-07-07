@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.flmelody.core.netty;
+package org.flmelody.netcell;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -29,25 +29,28 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.mqtt.MqttDecoder;
 import io.netty.handler.codec.mqtt.MqttEncoder;
-import org.flmelody.core.Broker;
-import org.flmelody.core.netty.handler.MqttMessageHandler;
-import org.flmelody.core.spi.PersistentStoreProvider;
+import io.netty.handler.ssl.OptionalSslHandler;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.timeout.IdleStateHandler;
+import java.util.Objects;
+import javax.net.ssl.SSLException;
+import org.flmelody.netcell.core.Broker;
+import org.flmelody.netcell.core.handler.MqttMessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ServiceLoader;
 
 /**
  * @author esotericman
  */
 public class MqttBroker implements Broker {
   private static final Logger logger = LoggerFactory.getLogger(MqttBroker.class);
+  private ProviderManager providerManager;
   private final EventLoopGroup bossGroup;
   private final EventLoopGroup workerGroup;
   private final int port;
   private final boolean useEpoll;
-  private final boolean useSSL;
-  private PersistentStoreProvider persistentStoreProvider;
+  private final boolean useSsl;
 
   public MqttBroker() {
     this(0);
@@ -57,16 +60,16 @@ public class MqttBroker implements Broker {
     this(port, 0, 0, false, false);
   }
 
-  public MqttBroker(int port, boolean useSSL) {
-    this(port, 0, 0, false, useSSL);
+  public MqttBroker(int port, boolean useSsl) {
+    this(port, 0, 0, false, useSsl);
   }
 
-  public MqttBroker(int port, boolean useEpoll, boolean useSSL) {
-    this(port, 0, 0, useEpoll, useSSL);
+  public MqttBroker(int port, boolean useEpoll, boolean useSsl) {
+    this(port, 0, 0, useEpoll, useSsl);
   }
 
   public MqttBroker(
-      int port, int bossThreads, int workerThreads, boolean useEpoll, boolean useSSL) {
+      int port, int bossThreads, int workerThreads, boolean useEpoll, boolean useSsl) {
     if (useEpoll) {
       this.bossGroup = new EpollEventLoopGroup(bossThreads);
       this.workerGroup = new EpollEventLoopGroup(workerThreads);
@@ -75,9 +78,9 @@ public class MqttBroker implements Broker {
       this.workerGroup = new NioEventLoopGroup(workerThreads);
     }
     this.useEpoll = useEpoll;
-    this.useSSL = useSSL;
+    this.useSsl = useSsl;
     if (port == 0) {
-      if (this.useSSL) {
+      if (this.useSsl) {
         this.port = 8883;
       } else {
         this.port = 1883;
@@ -85,39 +88,73 @@ public class MqttBroker implements Broker {
     } else {
       this.port = port;
     }
-    loadStore();
   }
 
-  private void loadStore() {
-    persistentStoreProvider = ServiceLoader.load(PersistentStoreProvider.class).findFirst().orElse(null);
+  public MqttBroker providerManager(ProviderManager providerManager) {
+    this.providerManager = providerManager;
+    return this;
   }
 
   @Override
-  public void start() throws Exception {
+  public void start() {
     try {
       ServerBootstrap bootstrap =
           new ServerBootstrap()
               .group(bossGroup, workerGroup)
               .channel(useEpoll ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
-              .childHandler(
-                  new ChannelInitializer<>() {
-                    @Override
-                    protected void initChannel(Channel ch) {
-                      ChannelPipeline pipeline = ch.pipeline();
-                      pipeline.addLast(new MqttDecoder());
-                      pipeline.addLast(MqttEncoder.INSTANCE);
-                      pipeline.addLast(new MqttMessageHandler());
-                    }
-                  })
+              .childHandler(new BrokerChannelInitializer(initializeSslContext()))
               .childOption(ChannelOption.TCP_NODELAY, true)
               .childOption(ChannelOption.SO_KEEPALIVE, true)
               .option(ChannelOption.SO_REUSEADDR, true);
       ChannelFuture f = bootstrap.bind(this.port).sync();
-      logger.atInfo().log("Mqtt broker started successfully, listening on port {}", port);
+      logger.atInfo().log("Netcell started successfully, listening on port {}", port);
       f.channel().closeFuture().sync();
+    } catch (Exception e) {
+      logger.error("Netcell started failed", e);
     } finally {
       this.bossGroup.shutdownGracefully();
       this.workerGroup.shutdownGracefully();
+    }
+  }
+
+  private SslContext initializeSslContext() {
+    if (useSsl) {
+      if (Objects.isNull(this.providerManager.getSslProvider())) {
+        logger.atWarn().log("SSL provider not set, ignoring ssl setting");
+      } else {
+        try {
+          return SslContextBuilder.forServer(
+                  providerManager.getSslProvider().certFile(),
+                  providerManager.getSslProvider().keyFile())
+              .build();
+        } catch (SSLException ex) {
+          throw new RuntimeException(ex);
+        }
+      }
+    }
+    return null;
+  }
+
+  /** Initialize channel */
+  class BrokerChannelInitializer extends ChannelInitializer<Channel> {
+    private final SslContext sslContext;
+
+    BrokerChannelInitializer(SslContext sslContext) {
+      this.sslContext = sslContext;
+    }
+
+    @Override
+    protected void initChannel(Channel ch) throws Exception {
+      ChannelPipeline pipeline = ch.pipeline();
+      if (Objects.nonNull(sslContext)) {
+        pipeline.addLast(new OptionalSslHandler(sslContext));
+      }
+      pipeline.addLast(new MqttDecoder());
+      pipeline.addLast(MqttEncoder.INSTANCE);
+      pipeline.addLast(new IdleStateHandler(0, 0, 10));
+      pipeline.addLast(
+          new MqttMessageHandler(
+              new MqttDispatcher().assembleListeners(MqttBroker.this.providerManager)));
     }
   }
 }

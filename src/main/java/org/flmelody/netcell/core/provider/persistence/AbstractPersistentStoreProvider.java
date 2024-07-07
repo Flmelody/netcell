@@ -14,13 +14,22 @@
  * limitations under the License.
  */
 
-package org.flmelody.core;
+package org.flmelody.netcell.core.provider.persistence;
+
+import io.netty.handler.codec.mqtt.MqttMessageType;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author esotericman
  */
-@FunctionalInterface
-public interface Broker {
+public abstract class AbstractPersistentStoreProvider implements PersistentStoreProvider {
+  private static final Set<MqttMessageType> supportedMessageTypes =
+      new HashSet<>(Arrays.asList(MqttMessageType.CONNECT, MqttMessageType.PUBLISH));
 
-  void start() throws Exception;
+  @Override
+  public final boolean interests(MqttMessageType mqttMessageType) {
+    return supportedMessageTypes.contains(mqttMessageType);
+  }
 }

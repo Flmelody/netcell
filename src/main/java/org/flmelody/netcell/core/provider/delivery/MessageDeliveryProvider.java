@@ -14,14 +14,25 @@
  * limitations under the License.
  */
 
-package org.flmelody.core.spi;
+package org.flmelody.netcell.core.provider.delivery;
 
-import io.netty.handler.codec.mqtt.MqttQoS;
+import io.netty.handler.codec.mqtt.MqttMessageType;
+import org.flmelody.netcell.core.listener.MqttMessageListener;
+import org.flmelody.netcell.core.provider.Provider;
 
 /**
- * The persistence of messages should be implemented in a way that ensures as high a quality as
- * possible.
- * @see MqttQoS
+ * The heart of message delivery.
+ *
  * @author esotericman
  */
-public interface PersistentStoreProvider {}
+public interface MessageDeliveryProvider extends Provider, MqttMessageListener {
+  MessageDeliveryProvider EMPTY = new Empty();
+
+  /** Empty implementation */
+  class Empty implements MessageDeliveryProvider {
+    @Override
+    public boolean interests(MqttMessageType mqttMessageType) {
+      return false;
+    }
+  }
+}

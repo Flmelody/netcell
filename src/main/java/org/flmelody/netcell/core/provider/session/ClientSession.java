@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-package org.flmelody.core.spi;
+package org.flmelody.netcell.core.provider.session;
 
 /**
- * Reserve a certain number and duration of messages for future subscribers.
- *
  * @author esotericman
  */
-public interface RetainedMessageProvider {}
+public class ClientSession {}

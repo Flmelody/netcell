@@ -28,6 +28,12 @@ java {
     withSourcesJar()
 }
 
+tasks.processResources {
+    files("META-INF/netcell.properties") {
+        expand(mapOf("projectVersion" to project.version))
+    }
+}
+
 tasks.test {
     useJUnitPlatform()
 }
@@ -43,7 +49,7 @@ publishing {
             pom {
                 name.set("netcell")
                 description.set("Another MQTT broker")
-                url.set("https://github.com/Flmelody/spring-method-parameter-resolver")
+                url.set("https://github.com/Flmelody/netcell")
 
                 licenses {
                     license {
