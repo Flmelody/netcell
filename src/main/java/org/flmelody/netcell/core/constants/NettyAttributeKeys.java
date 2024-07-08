@@ -14,24 +14,14 @@
  * limitations under the License.
  */
 
-package org.flmelody.netcell.core.listener;
+package org.flmelody.netcell.core.constants;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.mqtt.MqttMessage;
-import io.netty.handler.codec.mqtt.MqttMessageType;
+import io.netty.util.AttributeKey;
 
 /**
  * @author esotericman
  */
-public class MqttPingMessageListener implements MqttMessageListener {
-  @Override
-  public boolean interests(MqttMessageType mqttMessageType) {
-    return MqttMessageType.PINGREQ.equals(mqttMessageType);
-  }
-
-  @Override
-  public void onMessage(ChannelHandlerContext context, MqttMessage mqttMessage) {
-    context.writeAndFlush(MqttMessage.PINGRESP);
-    markStop(context);
-  }
+public interface NettyAttributeKeys {
+  AttributeKey<Boolean> MQTT_LISTENER_FINISH = AttributeKey.valueOf("MQTT_LISTENER_FINISH");
+  AttributeKey<String> MQTT_CLIENT_ID = AttributeKey.valueOf("MQTT_CLIENT_ID");
 }

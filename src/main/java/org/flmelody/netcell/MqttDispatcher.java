@@ -21,7 +21,7 @@ import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttMessageType;
 import java.util.ArrayList;
 import java.util.List;
-import org.flmelody.netcell.core.handler.MqttMessageHandler;
+import org.flmelody.netcell.core.constants.NettyAttributeKeys;
 import org.flmelody.netcell.core.listener.MqttMessageListener;
 import org.flmelody.netcell.core.listener.MqttPingMessageListener;
 
@@ -43,7 +43,7 @@ public final class MqttDispatcher {
   public void dispatch(ChannelHandlerContext context, MqttMessage mqttMessage) {
     MqttMessageType messageType = mqttMessage.fixedHeader().messageType();
     for (MqttMessageListener mqttMessageListener : mqttMessageListeners) {
-      if (context.channel().attr(MqttMessageHandler.MQTT_LISTENER_FINISH).get()) {
+      if (context.channel().attr(NettyAttributeKeys.MQTT_LISTENER_FINISH).get()) {
         if (mqttMessageListener.interests(messageType)) {
           mqttMessageListener.onMessage(context, mqttMessage);
         }
