@@ -26,9 +26,9 @@ import io.netty.handler.codec.mqtt.MqttFixedHeader;
 import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttMessageType;
 import io.netty.handler.codec.mqtt.MqttQoS;
-import io.netty.util.AttributeKey;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.flmelody.netcell.core.constants.NettyAttributeKeys;
 
 /**
  * @author esotericman
@@ -36,13 +36,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class LocalSessionProvider extends AbstractTemporarySessionProvider {
   protected static final Map<String, ChannelHandlerContext> clients =
       new ConcurrentHashMap<>(2 << 10);
-  protected static final AttributeKey<String> MQTT_CLIENT_ID =
-      AttributeKey.valueOf("MQTT_CLIENT_ID");
 
   @Override
   public void connect(MqttConnectMessage mqttConnectMessage, ChannelHandlerContext context) {
     clients.put(mqttConnectMessage.payload().clientIdentifier(), context);
-    context.channel().attr(MQTT_CLIENT_ID).set(mqttConnectMessage.payload().clientIdentifier());
+    context
+        .channel()
+        .attr(NettyAttributeKeys.MQTT_CLIENT_ID)
+        .set(mqttConnectMessage.payload().clientIdentifier());
     MqttConnectVariableHeader mqttConnectVariableHeader = mqttConnectMessage.variableHeader();
     MqttFixedHeader fixedHeader =
         new MqttFixedHeader(MqttMessageType.CONNACK, false, MqttQoS.AT_MOST_ONCE, false, 0);
@@ -55,6 +56,6 @@ public class LocalSessionProvider extends AbstractTemporarySessionProvider {
 
   @Override
   public void disconnect(MqttMessage mqttMessage, ChannelHandlerContext context) {
-    clients.remove(context.channel().attr(MQTT_CLIENT_ID).get());
+    clients.remove(context.channel().attr(NettyAttributeKeys.MQTT_CLIENT_ID).get());
   }
 }
