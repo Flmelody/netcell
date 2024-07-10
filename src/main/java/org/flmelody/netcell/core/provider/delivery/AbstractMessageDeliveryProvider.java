@@ -20,13 +20,19 @@ import io.netty.handler.codec.mqtt.MqttMessageType;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import org.flmelody.netcell.core.interactor.Interactor;
+import org.flmelody.netcell.core.provider.InteractableProviderSupport;
+import org.flmelody.netcell.core.provider.Provider;
 
 /**
  * @author esotericman
  */
-public abstract class AbstractMessageDeliveryProvider implements MessageDeliveryProvider {
+public abstract class AbstractMessageDeliveryProvider
+    extends InteractableProviderSupport<MessageDeliveryProvider>
+    implements MessageDeliveryProvider {
   private static final Set<MqttMessageType> supportedMessageTypes =
       new HashSet<>(Arrays.asList(MqttMessageType.CONNECT, MqttMessageType.PUBLISH));
+  protected Interactor<Provider> interactor;
 
   @Override
   public final boolean interests(MqttMessageType mqttMessageType) {

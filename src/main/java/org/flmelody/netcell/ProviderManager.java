@@ -17,8 +17,15 @@
 package org.flmelody.netcell;
 
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.ServiceLoader;
+import java.util.function.Supplier;
+import org.flmelody.netcell.core.interactor.Interactable;
+import org.flmelody.netcell.core.interactor.Interactor;
 import org.flmelody.netcell.core.provider.Provider;
+import org.flmelody.netcell.core.provider.ProviderSeries;
 import org.flmelody.netcell.core.provider.delivery.MessageDeliveryProvider;
 import org.flmelody.netcell.core.provider.persistence.PersistentStoreProvider;
 import org.flmelody.netcell.core.provider.retained.RetainedMessageProvider;
@@ -32,61 +39,38 @@ import org.slf4j.LoggerFactory;
  */
 public final class ProviderManager implements Provider {
   private static final Logger logger = LoggerFactory.getLogger(ProviderManager.class);
-  private MessageDeliveryProvider messageDeliveryProvider;
-  private TemporarySessionProvider temporarySessionProvider;
-  private PersistentStoreProvider persistentStoreProvider;
-  private RetainedMessageProvider retainedMessageProvider;
-  private SslProvider sslProvider;
-
-  public MessageDeliveryProvider getMessageDeliveryProvider() {
-    return messageDeliveryProvider;
-  }
-
-  public SslProvider getSslProvider() {
-    return sslProvider;
-  }
-
-  public RetainedMessageProvider getRetainedMessageProvider() {
-    return retainedMessageProvider;
-  }
-
-  public PersistentStoreProvider getPersistentStoreProvider() {
-    return persistentStoreProvider;
-  }
-
-  public TemporarySessionProvider getTemporarySessionProvider() {
-    return temporarySessionProvider;
-  }
+  private static final Map<ProviderSeries, Provider> providers = new HashMap<>();
+  private final Interactor<Provider> interactor = new ProviderInteractor();
 
   // We use SPI to load providers default
   ProviderManager() {
     ServiceLoader.load(MessageDeliveryProvider.class).stream()
         .max(Comparator.comparing(provider -> provider.get().priority()))
-        .ifPresentOrElse(
-            provider -> messageDeliveryProvider = provider.get(),
-            () -> messageDeliveryProvider = MessageDeliveryProvider.EMPTY);
+        .ifPresent(
+            provider ->
+                providers.put(provider.get().withActor(this.interactor).series(), provider.get()));
 
     ServiceLoader.load(TemporarySessionProvider.class).stream()
         .max(Comparator.comparing(provider -> provider.get().priority()))
-        .ifPresentOrElse(
-            provider -> temporarySessionProvider = provider.get(),
-            () -> temporarySessionProvider = TemporarySessionProvider.EMPTY);
+        .ifPresent(
+            provider ->
+                providers.put(provider.get().withActor(this.interactor).series(), provider.get()));
 
     ServiceLoader.load(PersistentStoreProvider.class).stream()
         .max(Comparator.comparing(provider -> provider.get().priority()))
-        .ifPresentOrElse(
-            provider -> persistentStoreProvider = provider.get(),
-            () -> persistentStoreProvider = PersistentStoreProvider.EMPTY);
+        .ifPresent(
+            provider ->
+                providers.put(provider.get().withActor(this.interactor).series(), provider.get()));
 
     ServiceLoader.load(RetainedMessageProvider.class).stream()
         .max(Comparator.comparing(provider -> provider.get().priority()))
-        .ifPresentOrElse(
-            provider -> retainedMessageProvider = provider.get(),
-            () -> retainedMessageProvider = RetainedMessageProvider.EMPTY);
+        .ifPresent(
+            provider ->
+                providers.put(provider.get().withActor(this.interactor).series(), provider.get()));
 
     ServiceLoader.load(SslProvider.class).stream()
         .max(Comparator.comparing(provider -> provider.get().priority()))
-        .ifPresent(provider -> sslProvider = provider.get());
+        .ifPresent(provider -> providers.put(provider.get().series(), provider.get()));
   }
 
   /**
@@ -96,21 +80,44 @@ public final class ProviderManager implements Provider {
    */
   void use(Provider... providers) {
     for (Provider provider : providers) {
-      if (provider instanceof MessageDeliveryProvider) {
-        messageDeliveryProvider = (MessageDeliveryProvider) provider;
+      //noinspection rawtypes
+      if (provider instanceof Interactable interactable) {
+        //noinspection unchecked
+        interactable.withActor(this.interactor);
       }
-      if (provider instanceof TemporarySessionProvider) {
-        temporarySessionProvider = (TemporarySessionProvider) provider;
-      }
-      if (provider instanceof PersistentStoreProvider) {
-        persistentStoreProvider = (PersistentStoreProvider) provider;
-      }
-      if (provider instanceof RetainedMessageProvider) {
-        retainedMessageProvider = (RetainedMessageProvider) provider;
-      }
-      if (provider instanceof SslProvider) {
-        sslProvider = (SslProvider) provider;
+      ProviderManager.providers.put(provider.series(), provider);
+    }
+  }
+
+  static Provider provider(ProviderSeries series) {
+    return providers.get(series);
+  }
+
+  static <T extends Provider> T provider(
+      ProviderSeries series, Class<T> clazz, Supplier<T> supplier) {
+    Provider provider = providers.get(series);
+    if (Objects.nonNull(provider)) {
+      if (clazz.isAssignableFrom(provider.getClass())) {
+        //noinspection unchecked
+        return (T) provider;
       }
     }
+    return supplier.get();
+  }
+
+  static <T extends Provider> T provider(ProviderSeries series, Class<T> clazz, T defaultProvider) {
+    Provider provider = providers.get(series);
+    if (Objects.nonNull(provider)) {
+      if (clazz.isAssignableFrom(provider.getClass())) {
+        //noinspection unchecked
+        return (T) provider;
+      }
+    }
+    return defaultProvider;
+  }
+
+  @Override
+  public ProviderSeries series() {
+    return null;
   }
 }

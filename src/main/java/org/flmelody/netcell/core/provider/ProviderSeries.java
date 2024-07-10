@@ -16,11 +16,13 @@
 
 package org.flmelody.netcell.core.provider;
 
-import org.flmelody.netcell.core.Order;
-
 /**
  * @author esotericman
  */
-public interface Provider extends Order {
-  ProviderSeries series();
+public enum ProviderSeries {
+  DELIVERY,
+  PERSISTENCE,
+  RETAINED,
+  SESSION,
+  SSL;
 }

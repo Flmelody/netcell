@@ -24,6 +24,11 @@ import java.util.List;
 import org.flmelody.netcell.core.constants.NettyAttributeKeys;
 import org.flmelody.netcell.core.listener.MqttMessageListener;
 import org.flmelody.netcell.core.listener.MqttPingMessageListener;
+import org.flmelody.netcell.core.provider.ProviderSeries;
+import org.flmelody.netcell.core.provider.delivery.MessageDeliveryProvider;
+import org.flmelody.netcell.core.provider.persistence.PersistentStoreProvider;
+import org.flmelody.netcell.core.provider.retained.RetainedMessageProvider;
+import org.flmelody.netcell.core.provider.session.TemporarySessionProvider;
 
 /**
  * @author esotericman
@@ -31,23 +36,38 @@ import org.flmelody.netcell.core.listener.MqttPingMessageListener;
 public final class MqttDispatcher {
   private final List<MqttMessageListener> mqttMessageListeners = new ArrayList<>();
 
-  MqttDispatcher assembleListeners(ProviderManager providerManager) {
+  MqttDispatcher assembleListeners() {
     mqttMessageListeners.add(new MqttPingMessageListener());
-    mqttMessageListeners.add(providerManager.getTemporarySessionProvider());
-    mqttMessageListeners.add(providerManager.getMessageDeliveryProvider());
-    mqttMessageListeners.add(providerManager.getRetainedMessageProvider());
-    mqttMessageListeners.add(providerManager.getPersistentStoreProvider());
+    mqttMessageListeners.add(
+        ProviderManager.provider(
+            ProviderSeries.SESSION,
+            TemporarySessionProvider.class,
+            TemporarySessionProvider.EMPTY));
+    mqttMessageListeners.add(
+        ProviderManager.provider(
+            ProviderSeries.DELIVERY, MessageDeliveryProvider.class, MessageDeliveryProvider.EMPTY));
+    mqttMessageListeners.add(
+        ProviderManager.provider(
+            ProviderSeries.RETAINED, RetainedMessageProvider.class, RetainedMessageProvider.EMPTY));
+    mqttMessageListeners.add(
+        ProviderManager.provider(
+            ProviderSeries.PERSISTENCE,
+            PersistentStoreProvider.class,
+            PersistentStoreProvider.EMPTY));
     return this;
   }
 
   public void dispatch(ChannelHandlerContext context, MqttMessage mqttMessage) {
     MqttMessageType messageType = mqttMessage.fixedHeader().messageType();
     for (MqttMessageListener mqttMessageListener : mqttMessageListeners) {
-      if (context.channel().attr(NettyAttributeKeys.MQTT_LISTENER_FINISH).get()) {
-        if (mqttMessageListener.interests(messageType)) {
-          mqttMessageListener.onMessage(context, mqttMessage);
-        }
+      if (!alreadyStop(context) && mqttMessageListener.interests(messageType)) {
+        mqttMessageListener.onMessage(context, mqttMessage);
       }
     }
+  }
+
+  private boolean alreadyStop(ChannelHandlerContext context) {
+    return Boolean.TRUE.equals(
+        context.channel().attr(NettyAttributeKeys.MQTT_LISTENER_FINISH).get());
   }
 }

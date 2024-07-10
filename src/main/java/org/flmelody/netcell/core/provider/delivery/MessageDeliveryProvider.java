@@ -17,15 +17,28 @@
 package org.flmelody.netcell.core.provider.delivery;
 
 import io.netty.handler.codec.mqtt.MqttMessageType;
+import org.flmelody.netcell.core.interactor.Interactable;
+import org.flmelody.netcell.core.interactor.Interactor;
 import org.flmelody.netcell.core.listener.MqttMessageListener;
 import org.flmelody.netcell.core.provider.Provider;
+import org.flmelody.netcell.core.provider.ProviderSeries;
 
 /**
  * The heart of message delivery.
  *
  * @author esotericman
  */
-public interface MessageDeliveryProvider extends Provider, MqttMessageListener {
+public interface MessageDeliveryProvider
+    extends Provider, MqttMessageListener, Interactable<MessageDeliveryProvider, Provider> {
+
+  void subscribe(String topic, String clientId);
+
+  void unsubscribe(String topic, String clientId);
+
+  default ProviderSeries series() {
+    return ProviderSeries.DELIVERY;
+  }
+
   MessageDeliveryProvider EMPTY = new Empty();
 
   /** Empty implementation */
@@ -33,6 +46,17 @@ public interface MessageDeliveryProvider extends Provider, MqttMessageListener {
     @Override
     public boolean interests(MqttMessageType mqttMessageType) {
       return false;
+    }
+
+    @Override
+    public void subscribe(String topic, String clientId) {}
+
+    @Override
+    public void unsubscribe(String topic, String clientId) {}
+
+    @Override
+    public MessageDeliveryProvider withActor(Interactor<Provider> interactor) {
+      return this;
     }
   }
 }

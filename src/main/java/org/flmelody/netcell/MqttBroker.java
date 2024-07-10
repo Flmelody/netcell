@@ -34,9 +34,12 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.timeout.IdleStateHandler;
 import java.util.Objects;
+import java.util.function.Supplier;
 import javax.net.ssl.SSLException;
 import org.flmelody.netcell.core.Broker;
 import org.flmelody.netcell.core.handler.MqttMessageHandler;
+import org.flmelody.netcell.core.provider.ProviderSeries;
+import org.flmelody.netcell.core.provider.security.SslProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +48,6 @@ import org.slf4j.LoggerFactory;
  */
 public class MqttBroker implements Broker {
   private static final Logger logger = LoggerFactory.getLogger(MqttBroker.class);
-  private ProviderManager providerManager;
   private final EventLoopGroup bossGroup;
   private final EventLoopGroup workerGroup;
   private final int port;
@@ -90,11 +92,6 @@ public class MqttBroker implements Broker {
     }
   }
 
-  public MqttBroker providerManager(ProviderManager providerManager) {
-    this.providerManager = providerManager;
-    return this;
-  }
-
   @Override
   public void start() {
     try {
@@ -119,13 +116,17 @@ public class MqttBroker implements Broker {
 
   private SslContext initializeSslContext() {
     if (useSsl) {
-      if (Objects.isNull(this.providerManager.getSslProvider())) {
+      if (Objects.isNull(ProviderManager.provider(ProviderSeries.SSL))) {
         logger.atWarn().log("SSL provider not set, ignoring ssl setting");
       } else {
         try {
           return SslContextBuilder.forServer(
-                  providerManager.getSslProvider().certFile(),
-                  providerManager.getSslProvider().keyFile())
+                  ProviderManager.provider(
+                          ProviderSeries.SSL, SslProvider.class, (Supplier<SslProvider>) () -> null)
+                      .certFile(),
+                  ProviderManager.provider(
+                          ProviderSeries.SSL, SslProvider.class, (Supplier<SslProvider>) () -> null)
+                      .keyFile())
               .build();
         } catch (SSLException ex) {
           throw new RuntimeException(ex);
@@ -136,7 +137,7 @@ public class MqttBroker implements Broker {
   }
 
   /** Initialize channel */
-  class BrokerChannelInitializer extends ChannelInitializer<Channel> {
+  static class BrokerChannelInitializer extends ChannelInitializer<Channel> {
     private final SslContext sslContext;
 
     BrokerChannelInitializer(SslContext sslContext) {
@@ -152,9 +153,7 @@ public class MqttBroker implements Broker {
       pipeline.addLast(new MqttDecoder());
       pipeline.addLast(MqttEncoder.INSTANCE);
       pipeline.addLast(new IdleStateHandler(0, 0, 10));
-      pipeline.addLast(
-          new MqttMessageHandler(
-              new MqttDispatcher().assembleListeners(MqttBroker.this.providerManager)));
+      pipeline.addLast(new MqttMessageHandler(new MqttDispatcher().assembleListeners()));
     }
   }
 }

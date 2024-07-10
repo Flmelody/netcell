@@ -18,6 +18,7 @@ package org.flmelody.netcell.core.provider.security;
 
 import java.io.InputStream;
 import java.util.Objects;
+import org.flmelody.netcell.core.provider.ProviderSeries;
 
 /**
  * @author esotericman
@@ -40,6 +41,11 @@ public final class SimpleSslProvider implements SslProvider {
   @Override
   public InputStream keyFile() {
     return this.keyFile;
+  }
+
+  @Override
+  public ProviderSeries series() {
+    return ProviderSeries.SSL;
   }
 
   /** Builder for SimpleSslProvider */

@@ -20,11 +20,14 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttMessageType;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
+import org.flmelody.netcell.core.provider.InteractableProviderSupport;
 
 /**
  * @author esotericman
  */
-public abstract class AbstractRetainedMessageProvider implements RetainedMessageProvider {
+public abstract class AbstractRetainedMessageProvider
+    extends InteractableProviderSupport<RetainedMessageProvider>
+    implements RetainedMessageProvider {
   @Override
   public final boolean interests(MqttMessageType mqttMessageType) {
     return MqttMessageType.PUBLISH.equals(mqttMessageType);

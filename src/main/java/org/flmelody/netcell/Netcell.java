@@ -114,9 +114,7 @@ public class Netcell {
       int port, int bossThreads, int workerThreads, boolean useEpoll, boolean useSsl) {
     Netcell netcell = new Netcell();
     netcell.providerManager = new ProviderManager();
-    netcell.broker =
-        new MqttBroker(port, bossThreads, workerThreads, useEpoll, useSsl)
-            .providerManager(netcell.providerManager);
+    netcell.broker = new MqttBroker(port, bossThreads, workerThreads, useEpoll, useSsl);
     return netcell;
   }
 

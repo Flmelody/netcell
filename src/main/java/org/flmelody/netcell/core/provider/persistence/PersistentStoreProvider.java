@@ -18,8 +18,11 @@ package org.flmelody.netcell.core.provider.persistence;
 
 import io.netty.handler.codec.mqtt.MqttMessageType;
 import io.netty.handler.codec.mqtt.MqttQoS;
+import org.flmelody.netcell.core.interactor.Interactable;
+import org.flmelody.netcell.core.interactor.Interactor;
 import org.flmelody.netcell.core.listener.MqttMessageListener;
 import org.flmelody.netcell.core.provider.Provider;
+import org.flmelody.netcell.core.provider.ProviderSeries;
 
 /**
  * The persistence of messages should be implemented in a way that ensures as high a quality as
@@ -28,7 +31,13 @@ import org.flmelody.netcell.core.provider.Provider;
  * @see MqttQoS
  * @author esotericman
  */
-public interface PersistentStoreProvider extends Provider, MqttMessageListener {
+public interface PersistentStoreProvider
+    extends Provider, MqttMessageListener, Interactable<PersistentStoreProvider, Provider> {
+
+  default ProviderSeries series() {
+    return ProviderSeries.PERSISTENCE;
+  }
+
   PersistentStoreProvider EMPTY = new Empty();
 
   /** Empty implementation */
@@ -36,6 +45,11 @@ public interface PersistentStoreProvider extends Provider, MqttMessageListener {
     @Override
     public boolean interests(MqttMessageType mqttMessageType) {
       return false;
+    }
+
+    @Override
+    public PersistentStoreProvider withActor(Interactor<Provider> interactor) {
+      return this;
     }
   }
 }

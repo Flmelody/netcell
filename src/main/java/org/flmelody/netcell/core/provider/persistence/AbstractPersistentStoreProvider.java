@@ -20,11 +20,14 @@ import io.netty.handler.codec.mqtt.MqttMessageType;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import org.flmelody.netcell.core.provider.InteractableProviderSupport;
 
 /**
  * @author esotericman
  */
-public abstract class AbstractPersistentStoreProvider implements PersistentStoreProvider {
+public abstract class AbstractPersistentStoreProvider
+    extends InteractableProviderSupport<PersistentStoreProvider>
+    implements PersistentStoreProvider {
   private static final Set<MqttMessageType> supportedMessageTypes =
       new HashSet<>(Arrays.asList(MqttMessageType.CONNECT, MqttMessageType.PUBLISH));
 

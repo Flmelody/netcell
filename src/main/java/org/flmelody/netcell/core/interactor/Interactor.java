@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package org.flmelody.netcell.core.provider;
-
-import org.flmelody.netcell.core.Order;
+package org.flmelody.netcell.core.interactor;
 
 /**
  * @author esotericman
  */
-public interface Provider extends Order {
-  ProviderSeries series();
+public interface Interactor<T> {
+  void withComponents(T component);
 }

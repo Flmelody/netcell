@@ -58,4 +58,9 @@ public class LocalSessionProvider extends AbstractTemporarySessionProvider {
   public void disconnect(MqttMessage mqttMessage, ChannelHandlerContext context) {
     clients.remove(context.channel().attr(NettyAttributeKeys.MQTT_CLIENT_ID).get());
   }
+
+  @Override
+  public ChannelHandlerContext client(String clientId) {
+    return clients.get(clientId);
+  }
 }

@@ -23,11 +23,14 @@ import io.netty.handler.codec.mqtt.MqttMessageType;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import org.flmelody.netcell.core.provider.InteractableProviderSupport;
 
 /**
  * @author esotericman
  */
-public abstract class AbstractTemporarySessionProvider implements TemporarySessionProvider {
+public abstract class AbstractTemporarySessionProvider
+    extends InteractableProviderSupport<TemporarySessionProvider>
+    implements TemporarySessionProvider {
   private static final Set<MqttMessageType> supportedMessageTypes =
       new HashSet<>(
           Arrays.asList(

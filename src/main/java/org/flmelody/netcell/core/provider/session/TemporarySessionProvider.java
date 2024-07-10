@@ -20,19 +20,29 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.mqtt.MqttConnectMessage;
 import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttMessageType;
+import org.flmelody.netcell.core.interactor.Interactable;
+import org.flmelody.netcell.core.interactor.Interactor;
 import org.flmelody.netcell.core.listener.MqttMessageListener;
 import org.flmelody.netcell.core.provider.Provider;
+import org.flmelody.netcell.core.provider.ProviderSeries;
 
 /**
  * Storage of client sessions.
  *
  * @author esotericman
  */
-public interface TemporarySessionProvider extends Provider, MqttMessageListener {
+public interface TemporarySessionProvider
+    extends Provider, MqttMessageListener, Interactable<TemporarySessionProvider, Provider> {
 
   void connect(MqttConnectMessage mqttConnectMessage, ChannelHandlerContext context);
 
   void disconnect(MqttMessage mqttMessage, ChannelHandlerContext context);
+
+  ChannelHandlerContext client(String clientId);
+
+  default ProviderSeries series() {
+    return ProviderSeries.SESSION;
+  }
 
   TemporarySessionProvider EMPTY = new Empty();
 
@@ -48,5 +58,15 @@ public interface TemporarySessionProvider extends Provider, MqttMessageListener 
 
     @Override
     public void disconnect(MqttMessage mqttMessage, ChannelHandlerContext context) {}
+
+    @Override
+    public ChannelHandlerContext client(String clientId) {
+      return null;
+    }
+
+    @Override
+    public TemporarySessionProvider withActor(Interactor<Provider> interactor) {
+      return this;
+    }
   }
 }
