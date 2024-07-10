@@ -21,8 +21,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttMessageType;
-import io.netty.util.AttributeKey;
 import org.flmelody.netcell.MqttDispatcher;
+import org.flmelody.netcell.core.constants.NettyAttributeKeys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,8 +32,6 @@ import org.slf4j.LoggerFactory;
 @ChannelHandler.Sharable
 public class MqttMessageHandler extends SimpleChannelInboundHandler<MqttMessage> {
   private static final Logger logger = LoggerFactory.getLogger(MqttMessageHandler.class);
-  public static final AttributeKey<Boolean> MQTT_LISTENER_FINISH =
-      AttributeKey.valueOf("MQTT_LISTENER_FINISH");
   private final MqttDispatcher mqttDispatcher;
 
   public MqttMessageHandler(MqttDispatcher mqttDispatcher) {
@@ -45,10 +43,11 @@ public class MqttMessageHandler extends SimpleChannelInboundHandler<MqttMessage>
     MqttMessageType messageType = msg.fixedHeader().messageType();
     logger.atInfo().log("New message received, current message type: {}", messageType);
     try {
-      ctx.channel().attr(MQTT_LISTENER_FINISH).setIfAbsent(Boolean.FALSE);
       mqttDispatcher.dispatch(ctx, msg);
     } finally {
-      ctx.channel().attr(MQTT_LISTENER_FINISH).compareAndSet(Boolean.TRUE, Boolean.FALSE);
+      ctx.channel()
+          .attr(NettyAttributeKeys.MQTT_LISTENER_FINISH)
+          .compareAndSet(Boolean.TRUE, Boolean.FALSE);
     }
     logger.atInfo().log("Dispatch message successful , current message type: {}", messageType);
   }

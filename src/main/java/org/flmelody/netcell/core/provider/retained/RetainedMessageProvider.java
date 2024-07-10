@@ -18,8 +18,8 @@ package org.flmelody.netcell.core.provider.retained;
 
 import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttMessageType;
+import org.flmelody.netcell.ProviderInteractor;
 import org.flmelody.netcell.core.interactor.Interactable;
-import org.flmelody.netcell.core.interactor.Interactor;
 import org.flmelody.netcell.core.listener.MqttMessageListener;
 import org.flmelody.netcell.core.provider.Provider;
 import org.flmelody.netcell.core.provider.ProviderSeries;
@@ -30,7 +30,9 @@ import org.flmelody.netcell.core.provider.ProviderSeries;
  * @author esotericman
  */
 public interface RetainedMessageProvider
-    extends Provider, MqttMessageListener, Interactable<RetainedMessageProvider, Provider> {
+    extends Provider,
+        MqttMessageListener,
+        Interactable<RetainedMessageProvider, ProviderInteractor> {
 
   /**
    * Try to get retained message, maybe null if there aren't retained message published yet.
@@ -70,7 +72,7 @@ public interface RetainedMessageProvider
     }
 
     @Override
-    public RetainedMessageProvider withActor(Interactor<Provider> interactor) {
+    public RetainedMessageProvider withActor(ProviderInteractor interactor) {
       return this;
     }
   }

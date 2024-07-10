@@ -29,8 +29,12 @@ public class ProviderInteractor implements Interactor<Provider> {
   private final Map<ProviderSeries, Provider> providers = new HashMap<>();
 
   @Override
-  public void withComponents(Provider component) {
-    providers.put(component.series(), component);
+  public void withComponents(Provider component, boolean override) {
+    if (override) {
+      providers.put(component.series(), component);
+    } else {
+      providers.putIfAbsent(component.series(), component);
+    }
   }
 
   public <T extends Provider> T getProvider(Class<T> type) {

@@ -64,6 +64,11 @@ public final class MqttDispatcher {
         mqttMessageListener.onMessage(context, mqttMessage);
       }
     }
+    stop(context);
+  }
+
+  private void stop(ChannelHandlerContext context) {
+    context.channel().attr(NettyAttributeKeys.MQTT_LISTENER_FINISH).set(Boolean.TRUE);
   }
 
   private boolean alreadyStop(ChannelHandlerContext context) {

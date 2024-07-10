@@ -20,5 +20,5 @@ package org.flmelody.netcell.core.interactor;
  * @author esotericman
  */
 public interface Interactor<T> {
-  void withComponents(T component);
+  void withComponents(T component, boolean override);
 }

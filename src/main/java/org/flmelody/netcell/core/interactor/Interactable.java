@@ -21,7 +21,7 @@ import org.flmelody.netcell.core.provider.Provider;
 /**
  * @author esotericman
  */
-public interface Interactable<T extends Provider, A> {
+public interface Interactable<T extends Provider, A extends Interactor<?>> {
 
-  T withActor(Interactor<A> interactor);
+  T withActor(A interactor);
 }

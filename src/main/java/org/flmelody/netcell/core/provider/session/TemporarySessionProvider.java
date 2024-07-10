@@ -20,8 +20,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.mqtt.MqttConnectMessage;
 import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttMessageType;
+import org.flmelody.netcell.ProviderInteractor;
 import org.flmelody.netcell.core.interactor.Interactable;
-import org.flmelody.netcell.core.interactor.Interactor;
 import org.flmelody.netcell.core.listener.MqttMessageListener;
 import org.flmelody.netcell.core.provider.Provider;
 import org.flmelody.netcell.core.provider.ProviderSeries;
@@ -32,7 +32,9 @@ import org.flmelody.netcell.core.provider.ProviderSeries;
  * @author esotericman
  */
 public interface TemporarySessionProvider
-    extends Provider, MqttMessageListener, Interactable<TemporarySessionProvider, Provider> {
+    extends Provider,
+        MqttMessageListener,
+        Interactable<TemporarySessionProvider, ProviderInteractor> {
 
   void connect(MqttConnectMessage mqttConnectMessage, ChannelHandlerContext context);
 
@@ -65,7 +67,7 @@ public interface TemporarySessionProvider
     }
 
     @Override
-    public TemporarySessionProvider withActor(Interactor<Provider> interactor) {
+    public TemporarySessionProvider withActor(ProviderInteractor interactor) {
       return this;
     }
   }

@@ -23,7 +23,6 @@ import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.function.Supplier;
 import org.flmelody.netcell.core.interactor.Interactable;
-import org.flmelody.netcell.core.interactor.Interactor;
 import org.flmelody.netcell.core.provider.Provider;
 import org.flmelody.netcell.core.provider.ProviderSeries;
 import org.flmelody.netcell.core.provider.delivery.MessageDeliveryProvider;
@@ -40,7 +39,7 @@ import org.slf4j.LoggerFactory;
 public final class ProviderManager implements Provider {
   private static final Logger logger = LoggerFactory.getLogger(ProviderManager.class);
   private static final Map<ProviderSeries, Provider> providers = new HashMap<>();
-  private final Interactor<Provider> interactor = new ProviderInteractor();
+  private final ProviderInteractor interactor = new ProviderInteractor();
 
   // We use SPI to load providers default
   ProviderManager() {

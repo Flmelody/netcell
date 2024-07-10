@@ -19,48 +19,37 @@ package org.flmelody.netcell.core.provider;
 import java.util.Objects;
 import org.flmelody.netcell.ProviderInteractor;
 import org.flmelody.netcell.core.interactor.Interactable;
-import org.flmelody.netcell.core.interactor.Interactor;
 
 /**
+ * Provides the ability for providers to interact with each other.
+ *
  * @author esotericman
  */
 public abstract class InteractableProviderSupport<T extends Provider>
-    implements Provider, Interactable<T, Provider> {
-  protected final DelegateInteractor providerInteractor = new DelegateInteractor();
+    implements Provider, Interactable<T, ProviderInteractor> {
+  // Interactor for providers communicating with each other
+  protected final InteractorFacade providerInteractor = new InteractorFacade();
 
   @Override
-  public final T withActor(Interactor<Provider> interactor) {
+  public final T withActor(ProviderInteractor interactor) {
     if (Objects.isNull(this.providerInteractor.interactor)) {
       this.providerInteractor.interactor = interactor;
+      this.providerInteractor.interactor.withComponents(this, true);
     }
-    this.providerInteractor.withComponents(this);
     //noinspection unchecked
     return (T) this;
   }
 
-  /** Delegate inter actor */
-  public static class DelegateInteractor extends ProviderInteractor {
-    private Interactor<Provider> interactor;
+  /** Interactor facade, Only basic interactions are provided. */
+  public static class InteractorFacade {
+    private ProviderInteractor interactor;
 
-    @Override
-    public void withComponents(Provider component) {
-      interactor.withComponents(component);
-    }
-
-    @Override
     public <T extends Provider> T getProvider(Class<T> type) {
-      if (this.interactor instanceof ProviderInteractor) {
-        return ((ProviderInteractor) this.interactor).getProvider(type);
-      }
-      return super.getProvider(type);
+      return this.interactor.getProvider(type);
     }
 
-    @Override
     public <T extends Provider> T getProvider(ProviderSeries series, Class<T> type) {
-      if (this.interactor instanceof ProviderInteractor) {
-        return ((ProviderInteractor) this.interactor).getProvider(series, type);
-      }
-      return super.getProvider(series, type);
+      return this.interactor.getProvider(series, type);
     }
   }
 }

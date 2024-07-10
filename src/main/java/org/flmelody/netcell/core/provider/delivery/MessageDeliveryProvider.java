@@ -17,8 +17,8 @@
 package org.flmelody.netcell.core.provider.delivery;
 
 import io.netty.handler.codec.mqtt.MqttMessageType;
+import org.flmelody.netcell.ProviderInteractor;
 import org.flmelody.netcell.core.interactor.Interactable;
-import org.flmelody.netcell.core.interactor.Interactor;
 import org.flmelody.netcell.core.listener.MqttMessageListener;
 import org.flmelody.netcell.core.provider.Provider;
 import org.flmelody.netcell.core.provider.ProviderSeries;
@@ -29,7 +29,9 @@ import org.flmelody.netcell.core.provider.ProviderSeries;
  * @author esotericman
  */
 public interface MessageDeliveryProvider
-    extends Provider, MqttMessageListener, Interactable<MessageDeliveryProvider, Provider> {
+    extends Provider,
+        MqttMessageListener,
+        Interactable<MessageDeliveryProvider, ProviderInteractor> {
 
   void subscribe(String topic, String clientId);
 
@@ -55,7 +57,7 @@ public interface MessageDeliveryProvider
     public void unsubscribe(String topic, String clientId) {}
 
     @Override
-    public MessageDeliveryProvider withActor(Interactor<Provider> interactor) {
+    public MessageDeliveryProvider withActor(ProviderInteractor interactor) {
       return this;
     }
   }

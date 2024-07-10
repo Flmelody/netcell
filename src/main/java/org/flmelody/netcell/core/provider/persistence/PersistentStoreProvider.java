@@ -18,8 +18,8 @@ package org.flmelody.netcell.core.provider.persistence;
 
 import io.netty.handler.codec.mqtt.MqttMessageType;
 import io.netty.handler.codec.mqtt.MqttQoS;
+import org.flmelody.netcell.ProviderInteractor;
 import org.flmelody.netcell.core.interactor.Interactable;
-import org.flmelody.netcell.core.interactor.Interactor;
 import org.flmelody.netcell.core.listener.MqttMessageListener;
 import org.flmelody.netcell.core.provider.Provider;
 import org.flmelody.netcell.core.provider.ProviderSeries;
@@ -32,7 +32,9 @@ import org.flmelody.netcell.core.provider.ProviderSeries;
  * @author esotericman
  */
 public interface PersistentStoreProvider
-    extends Provider, MqttMessageListener, Interactable<PersistentStoreProvider, Provider> {
+    extends Provider,
+        MqttMessageListener,
+        Interactable<PersistentStoreProvider, ProviderInteractor> {
 
   default ProviderSeries series() {
     return ProviderSeries.PERSISTENCE;
@@ -48,7 +50,7 @@ public interface PersistentStoreProvider
     }
 
     @Override
-    public PersistentStoreProvider withActor(Interactor<Provider> interactor) {
+    public PersistentStoreProvider withActor(ProviderInteractor interactor) {
       return this;
     }
   }
