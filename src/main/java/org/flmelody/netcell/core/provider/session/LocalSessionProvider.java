@@ -38,7 +38,7 @@ public class LocalSessionProvider extends AbstractTemporarySessionProvider {
       new ConcurrentHashMap<>(2 << 10);
 
   @Override
-  public void connect(MqttConnectMessage mqttConnectMessage, ChannelHandlerContext context) {
+  public void connect(ChannelHandlerContext context, MqttConnectMessage mqttConnectMessage) {
     clients.put(mqttConnectMessage.payload().clientIdentifier(), context);
     context
         .channel()
@@ -55,7 +55,7 @@ public class LocalSessionProvider extends AbstractTemporarySessionProvider {
   }
 
   @Override
-  public void disconnect(MqttMessage mqttMessage, ChannelHandlerContext context) {
+  public void disconnect(ChannelHandlerContext context, MqttMessage mqttMessage) {
     clients.remove(context.channel().attr(NettyAttributeKeys.MQTT_CLIENT_ID).get());
   }
 

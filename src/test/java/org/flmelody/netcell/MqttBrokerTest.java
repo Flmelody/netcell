@@ -1,5 +1,6 @@
 package org.flmelody.netcell;
 
+import org.flmelody.netcell.core.provider.delivery.LocalMessageDeliveryProvider;
 import org.flmelody.netcell.core.provider.session.LocalSessionProvider;
 
 /**
@@ -7,6 +8,6 @@ import org.flmelody.netcell.core.provider.session.LocalSessionProvider;
  */
 public class MqttBrokerTest {
   public static void main(String[] args) throws Exception {
-    Netcell.setup().use(new LocalSessionProvider()).run();
+    Netcell.setup().use(new LocalSessionProvider(), new LocalMessageDeliveryProvider()).run();
   }
 }

@@ -36,8 +36,10 @@ public abstract class AbstractRetainedMessageProvider
   @Override
   public void onMessage(ChannelHandlerContext context, MqttMessage mqttMessage) {
     if (mqttMessage instanceof MqttPublishMessage mqttPublishMessage) {
-      String topicName = mqttPublishMessage.variableHeader().topicName();
-      setRetainedMessage(topicName, mqttPublishMessage);
+      if (mqttPublishMessage.fixedHeader().isRetain()) {
+        String topicName = mqttPublishMessage.variableHeader().topicName();
+        setRetainedMessage(topicName, mqttPublishMessage);
+      }
     }
   }
 }

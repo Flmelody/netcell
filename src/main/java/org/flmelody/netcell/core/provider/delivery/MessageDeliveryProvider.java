@@ -16,7 +16,11 @@
 
 package org.flmelody.netcell.core.provider.delivery;
 
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttMessageType;
+import io.netty.handler.codec.mqtt.MqttSubscribeMessage;
+import io.netty.handler.codec.mqtt.MqttUnsubscribeMessage;
 import org.flmelody.netcell.ProviderInteractor;
 import org.flmelody.netcell.core.interactor.Interactable;
 import org.flmelody.netcell.core.listener.MqttMessageListener;
@@ -33,9 +37,11 @@ public interface MessageDeliveryProvider
         MqttMessageListener,
         Interactable<MessageDeliveryProvider, ProviderInteractor> {
 
-  void subscribe(String topic, String clientId);
+  void publish(ChannelHandlerContext context, MqttMessage mqttMessage);
 
-  void unsubscribe(String topic, String clientId);
+  void subscribe(ChannelHandlerContext context, MqttSubscribeMessage mqttSubscribeMessage);
+
+  void unsubscribe(ChannelHandlerContext context, MqttUnsubscribeMessage mqttUnsubscribeMessage);
 
   default ProviderSeries series() {
     return ProviderSeries.DELIVERY;
@@ -51,10 +57,15 @@ public interface MessageDeliveryProvider
     }
 
     @Override
-    public void subscribe(String topic, String clientId) {}
+    public void publish(ChannelHandlerContext context, MqttMessage mqttMessage) {}
 
     @Override
-    public void unsubscribe(String topic, String clientId) {}
+    public void subscribe(
+        ChannelHandlerContext context, MqttSubscribeMessage mqttSubscribeMessage) {}
+
+    @Override
+    public void unsubscribe(
+        ChannelHandlerContext context, MqttUnsubscribeMessage mqttUnsubscribeMessage) {}
 
     @Override
     public MessageDeliveryProvider withActor(ProviderInteractor interactor) {

@@ -36,9 +36,9 @@ public interface TemporarySessionProvider
         MqttMessageListener,
         Interactable<TemporarySessionProvider, ProviderInteractor> {
 
-  void connect(MqttConnectMessage mqttConnectMessage, ChannelHandlerContext context);
+  void connect(ChannelHandlerContext context, MqttConnectMessage mqttConnectMessage);
 
-  void disconnect(MqttMessage mqttMessage, ChannelHandlerContext context);
+  void disconnect(ChannelHandlerContext context, MqttMessage mqttMessage);
 
   ChannelHandlerContext client(String clientId);
 
@@ -56,10 +56,10 @@ public interface TemporarySessionProvider
     }
 
     @Override
-    public void connect(MqttConnectMessage mqttConnectMessage, ChannelHandlerContext context) {}
+    public void connect(ChannelHandlerContext context, MqttConnectMessage mqttConnectMessage) {}
 
     @Override
-    public void disconnect(MqttMessage mqttMessage, ChannelHandlerContext context) {}
+    public void disconnect(ChannelHandlerContext context, MqttMessage mqttMessage) {}
 
     @Override
     public ChannelHandlerContext client(String clientId) {

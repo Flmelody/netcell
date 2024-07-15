@@ -36,7 +36,6 @@ public abstract class AbstractTemporarySessionProvider
           Arrays.asList(
               MqttMessageType.CONNECT,
               MqttMessageType.DISCONNECT,
-              MqttMessageType.PUBLISH,
               MqttMessageType.SUBSCRIBE,
               MqttMessageType.UNSUBSCRIBE));
 
@@ -50,10 +49,10 @@ public abstract class AbstractTemporarySessionProvider
     MqttMessageType mqttMessageType = mqttMessage.fixedHeader().messageType();
     switch (mqttMessageType) {
       case CONNECT:
-        connect((MqttConnectMessage) mqttMessage, context);
+        connect(context, (MqttConnectMessage) mqttMessage);
         return;
       case DISCONNECT:
-        disconnect(mqttMessage, context);
+        disconnect(context, mqttMessage);
         return;
       default:
     }

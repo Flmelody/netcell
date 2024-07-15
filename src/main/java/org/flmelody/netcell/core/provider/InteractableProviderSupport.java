@@ -19,6 +19,8 @@ package org.flmelody.netcell.core.provider;
 import java.util.Objects;
 import org.flmelody.netcell.ProviderInteractor;
 import org.flmelody.netcell.core.interactor.Interactable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Provides the ability for providers to interact with each other.
@@ -27,6 +29,7 @@ import org.flmelody.netcell.core.interactor.Interactable;
  */
 public abstract class InteractableProviderSupport<T extends Provider>
     implements Provider, Interactable<T, ProviderInteractor> {
+  protected Logger logger = LoggerFactory.getLogger(getClass());
   // Interactor for providers communicating with each other
   protected final InteractorFacade providerInteractor = new InteractorFacade();
 
@@ -43,6 +46,8 @@ public abstract class InteractableProviderSupport<T extends Provider>
   /** Interactor facade, Only basic interactions are provided. */
   public static class InteractorFacade {
     private ProviderInteractor interactor;
+
+    private InteractorFacade() {}
 
     public <T extends Provider> T getProvider(Class<T> type) {
       return this.interactor.getProvider(type);

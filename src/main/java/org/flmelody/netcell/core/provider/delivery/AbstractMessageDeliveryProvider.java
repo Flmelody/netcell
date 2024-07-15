@@ -16,13 +16,15 @@
 
 package org.flmelody.netcell.core.provider.delivery;
 
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttMessageType;
+import io.netty.handler.codec.mqtt.MqttSubscribeMessage;
+import io.netty.handler.codec.mqtt.MqttUnsubscribeMessage;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import org.flmelody.netcell.core.interactor.Interactor;
 import org.flmelody.netcell.core.provider.InteractableProviderSupport;
-import org.flmelody.netcell.core.provider.Provider;
 
 /**
  * @author esotericman
@@ -31,11 +33,35 @@ public abstract class AbstractMessageDeliveryProvider
     extends InteractableProviderSupport<MessageDeliveryProvider>
     implements MessageDeliveryProvider {
   private static final Set<MqttMessageType> supportedMessageTypes =
-      new HashSet<>(Arrays.asList(MqttMessageType.CONNECT, MqttMessageType.PUBLISH));
-  protected Interactor<Provider> interactor;
+      new HashSet<>(
+          Arrays.asList(
+              MqttMessageType.PUBLISH,
+              MqttMessageType.PUBREL,
+              MqttMessageType.SUBSCRIBE,
+              MqttMessageType.UNSUBSCRIBE));
 
   @Override
   public final boolean interests(MqttMessageType mqttMessageType) {
     return supportedMessageTypes.contains(mqttMessageType);
+  }
+
+  @Override
+  public void onMessage(ChannelHandlerContext context, MqttMessage mqttMessage) {
+    MqttMessageType mqttMessageType = mqttMessage.fixedHeader().messageType();
+
+    switch (mqttMessageType) {
+      case PUBLISH:
+        publish(context, mqttMessage);
+        break;
+      case PUBREL:
+        break;
+      case SUBSCRIBE:
+        subscribe(context, (MqttSubscribeMessage) mqttMessage);
+        break;
+      case UNSUBSCRIBE:
+        unsubscribe(context, (MqttUnsubscribeMessage) mqttMessage);
+        break;
+      default:
+    }
   }
 }
